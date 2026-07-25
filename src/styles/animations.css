@@ -1,0 +1,109 @@
+/* Complex Card Animations */
+
+/* ============ 1. TILT ============ */
+.tilt-card {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  transition: transform 0.15s ease-out, box-shadow 0.3s ease;
+}
+.tilt-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(192, 132, 252, 0.25), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 10;
+}
+.tilt-card:hover::before {
+  opacity: 1;
+}
+
+/* ============ 2. GLOW ============ */
+.glow-card-wrapper {
+  position: relative;
+  overflow: hidden;
+  padding: 2px;
+  border-radius: 18px; /* Slightly larger than inner card */
+}
+.glow-card-wrapper::before {
+  content: "";
+  position: absolute;
+  width: 250px;
+  height: 250px;
+  background: conic-gradient(from 0deg, transparent, #c084fc, #071C33, #c084fc, transparent);
+  top: calc(var(--gy, 50%) - 125px);
+  left: calc(var(--gx, 50%) - 125px);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  animation: spin 4s linear infinite;
+  pointer-events: none;
+}
+.glow-card-wrapper:hover::before {
+  opacity: 1;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============ 3. FLIP ============ */
+.flip-card-wrapper {
+  perspective: 1200px;
+}
+.flip-inner {
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(.2,.9,.25,1);
+}
+.flip-card-wrapper:hover .flip-inner {
+  transform: rotateY(180deg);
+}
+.flip-face {
+  backface-visibility: hidden;
+}
+.flip-back {
+  transform: rotateY(180deg);
+}
+
+/* ============ 4. REVEAL ============ */
+.reveal-card {
+  position: relative;
+  overflow: hidden;
+}
+.reveal-curtain {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+  transition: clip-path 0.6s cubic-bezier(.2,.9,.25,1);
+  z-index: 1;
+}
+.reveal-card:hover .reveal-curtain {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+.reveal-content-inner {
+  position: relative;
+  z-index: 2;
+  transition: color 0.4s ease;
+}
+.reveal-card:hover .reveal-text-change {
+  color: white !important;
+}
+
+/* ============ 5. PEEL ============ */
+.peel-card {
+  position: relative;
+}
+.peel-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  transition: transform 0.45s cubic-bezier(.2,.9,.25,1), box-shadow 0.45s ease;
+}
+.peel-l1 { z-index: 1; }
+.peel-l2 { z-index: 2; }
+.peel-l3 { z-index: 3; position: relative; }
+
+.peel-card:hover .peel-l1 { transform: translate(-14px, 14px) rotate(-4deg); }
+.peel-card:hover .peel-l2 { transform: translate(-7px, 7px) rotate(-2deg); }
+.peel-card:hover .peel-l3 { transform: translate(6px, -10px) rotate(2deg); box-shadow: 0 24px 50px -18px rgba(0,0,0,0.4); }
