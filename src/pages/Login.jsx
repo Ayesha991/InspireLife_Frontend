@@ -47,10 +47,10 @@ export default function Login() {
   return (
     <>
       <Helmet>
-        <title>{t('loginPage.pageTitle')}</title>
+        <title>{t('loginPage.pageTitle')} | IPTS Global</title>
       </Helmet>
 
-      <main className="bg-[#f8f9fc] min-h-[calc(100vh-80px)] flex items-center justify-center p-6">
+      <main className="bg-[#f8f9fc] flex-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           <GlowCard className="shadow-xl rounded-2xl">
             <div className="p-8 md:p-10">

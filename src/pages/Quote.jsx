@@ -32,8 +32,8 @@ function FloatingSelect({ label, name, options, required = true }) {
   return (
     <div className="floating-label-group relative">
       <input type="hidden" name={name} value={val} required={required} />
-      
-      <div 
+
+      <div
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full px-4 pt-5 pb-2 border-[1.5px] rounded-lg cursor-pointer flex items-center justify-between transition-colors bg-white ${isOpen ? 'border-purple-500' : 'border-[#EEF2F6] hover:border-purple-300'}`}
         style={{ minHeight: '56px' }}
@@ -46,17 +46,17 @@ function FloatingSelect({ label, name, options, required = true }) {
         {val}
       </span>
 
-      <ChevronDown 
-        size={18} 
-        className={`absolute end-4 top-1/2 -translate-y-1/2 text-[#AAB5C2] pointer-events-none transition-transform ${isOpen ? 'rotate-180 text-purple-500' : ''}`} 
+      <ChevronDown
+        size={18}
+        className={`absolute end-4 top-1/2 -translate-y-1/2 text-[#AAB5C2] pointer-events-none transition-transform ${isOpen ? 'rotate-180 text-purple-500' : ''}`}
       />
 
-      <label 
+      <label
         className={val || isOpen ? 'active' : ''}
-        style={{ 
-          top: val || isOpen ? '0.4rem' : '50%', 
-          transform: val || isOpen ? 'none' : 'translateY(-50%)', 
-          fontSize: val || isOpen ? '0.75rem' : '1rem', 
+        style={{
+          top: val || isOpen ? '0.4rem' : '50%',
+          transform: val || isOpen ? 'none' : 'translateY(-50%)',
+          fontSize: val || isOpen ? '0.75rem' : '1rem',
           color: val || isOpen ? '#9333ea' : '#AAB5C2',
           insetInlineStart: '1rem',
           position: 'absolute',
@@ -70,7 +70,7 @@ function FloatingSelect({ label, name, options, required = true }) {
 
       <AnimatePresence>
         {isOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
@@ -79,8 +79,8 @@ function FloatingSelect({ label, name, options, required = true }) {
           >
             <ul className="max-h-60 overflow-y-auto py-1">
               {options.map(o => (
-                <li 
-                  key={o} 
+                <li
+                  key={o}
                   className={`px-4 py-2.5 text-sm cursor-pointer transition-colors ${val === o ? 'bg-purple-50 text-purple-700 font-semibold' : 'text-[#071C33] hover:bg-purple-50 hover:text-purple-700'}`}
                   onClick={() => {
                     setVal(o);
@@ -94,11 +94,11 @@ function FloatingSelect({ label, name, options, required = true }) {
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       {/* Overlay to close when clicking outside */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 z-40" 
+        <div
+          className="fixed inset-0 z-40"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -119,7 +119,7 @@ function FloatingTextarea({ label, name, required = true }) {
         onBlur={() => setFocused(false)}
         aria-label={label}
       />
-      <label htmlFor={`quote-${name}`} style={{ top: '1.2rem', transform: 'none' }}>
+      <label htmlFor={`quote-${name}`}>
         {label}{required ? ' *' : ''}
       </label>
     </div>
@@ -161,7 +161,7 @@ export default function Quote() {
 
       const resData = await res.json();
       if (!res.ok) throw new Error(resData.message || 'Failed to submit quote request');
-      
+
       setSubmitted(true);
     } catch (err) {
       console.error(err);
@@ -174,13 +174,13 @@ export default function Quote() {
   return (
     <>
       <Helmet>
-        <title>Request a Quote — IPTS</title>
+        <title>Request a Quote | IPTS Global</title>
         <meta name="description" content="Request a quote from IPTS for industrial, oilfield, electrical, mechanical or chemical products. Fast response guaranteed." />
       </Helmet>
 
       <main id="main-content">
         <div className="bg-[#071C33] pt-28 pb-14">
-          <div className="container-custom">
+          <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
             <nav aria-label="Breadcrumb" className="mb-4">
               <ol className="flex items-center gap-2 text-xs text-white/50">
                 <li><Link to="/" className="hover:text-white transition-colors">{t('quote.breadcrumbHome')}</Link></li>
@@ -188,7 +188,7 @@ export default function Quote() {
                 <li className="text-white/80">{t('quote.pageTitle')}</li>
               </ol>
             </nav>
-            <h1 className="heading-lg text-white">{t('quote.pageTitle')}</h1>
+            <h1 className="heading-lg text-white font-heading">{t('quote.pageTitle')}</h1>
             <p className="text-white/60 text-body mt-3 max-w-md">
               {t('quote.pageSubtitle')}
             </p>

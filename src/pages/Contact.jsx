@@ -169,7 +169,7 @@ export default function Contact() {
   return (
     <>
       <Helmet>
-        <title>Contact Us — IPTS | Get in Touch</title>
+        <title>Contact Us | IPTS Global</title>
         <meta
           name="description"
           content="Contact IPTS — branches in UAE and Oman, centralized warehouse in Dubai. Phone: +971 50 357 8282. Email: info@iptsglobal.com"
@@ -180,11 +180,11 @@ export default function Contact() {
         {/* Header */}
         <div className="bg-[#071C33] relative py-24 overflow-hidden">
           <div className="absolute inset-0 bg-[#001736] z-10" />
-          <div className="container-custom relative z-20">
+          <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 relative z-20">
             <p className="text-purple-400 text-xs font-bold tracking-widest uppercase mb-3">
               {t('contact.connectLabel')}
             </p>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-5 font-heading">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-5 font-heading">
               {t('contact.pageTitle')}
             </h1>
             <p className="text-white/70 max-w-xl text-sm leading-relaxed">

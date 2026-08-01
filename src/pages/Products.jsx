@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { Search, ArrowRight, ChevronRight, ShoppingCart, ChevronDown, ChevronLeft, Loader2, PackageX } from 'lucide-react';
 import { productDetailsMap } from '../data/productDetails';
 import GlowCard from '../components/common/GlowCard';
+import CloudinaryImage from '../components/common/CloudinaryImage';
 import { useLanguage } from '../context/LanguageContext';
 import { dynamicTranslations } from '../data/dynamicTranslations';
 
@@ -48,7 +49,13 @@ export default function Products() {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          setCategories([{ name: t('productsPage.allCategories'), slug: '' }, ...data.data]);
+          const list = [...data.data];
+          const pipesIndex = list.findIndex(c => c.slug === 'pipes-and-pipe-fittings' || c.name.toLowerCase().includes('pipes'));
+          if (pipesIndex > -1) {
+            const [pipesCat] = list.splice(pipesIndex, 1);
+            list.unshift(pipesCat);
+          }
+          setCategories([{ name: t('productsPage.allCategories'), slug: '' }, ...list]);
         }
       })
       .catch(err => console.error('Error fetching categories:', err));
@@ -128,7 +135,8 @@ export default function Products() {
   return (
     <>
       <Helmet>
-        <title>{t('productsPage.pageTitle')} — IPTS</title>
+        <title>{t('productsPage.pageTitle')} | IPTS Global</title>
+        <meta name="description" content="Browse IPTS Global's extensive catalog of industrial tools, machinery, chemicals, and mechanical solutions." />
         <meta
           name="description"
           content={t('productsPage.pageDesc')}
@@ -137,7 +145,7 @@ export default function Products() {
 
       <main id="main-content" className="bg-[#f8f9fc] min-h-screen pb-20">
         <div className="bg-[#f8f9fc] pt-6 pb-2 md:pt-8 md:pb-6">
-          <div className="max-w-7xl mx-auto px-6">
+          <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
             <nav aria-label="Breadcrumb" className="mb-3">
               <ol className="flex items-center gap-2 text-xs font-semibold text-[#071C33]">
                 <li><Link to="/" className="hover:text-purple-600 transition-colors">{t('productsPage.breadcrumbHome')}</Link></li>
@@ -255,7 +263,7 @@ export default function Products() {
               {pagination && pagination.totalPages > 1 && (
                 <div className="mt-12 flex justify-center items-center gap-2">
                   <button 
-                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    onClick={() => { setPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                     disabled={!pagination.hasPrevPage}
                     className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#EEF2F6] bg-white text-[#071C33] hover:border-purple-600 hover:text-purple-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -267,7 +275,7 @@ export default function Products() {
                   </span>
 
                   <button 
-                    onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
+                    onClick={() => { setPage(p => Math.min(pagination.totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
                     disabled={!pagination.hasNextPage}
                     className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#EEF2F6] bg-white text-[#071C33] hover:border-purple-600 hover:text-purple-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
@@ -333,7 +341,7 @@ function ProductCard({ product, index, t, lang }) {
           aria-label={product.productName}
         >
           <div className="relative aspect-[4/3] bg-white flex items-center justify-center overflow-hidden border-b border-[#EEF2F6]">
-            <img
+            <CloudinaryImage
               src={imgUrl}
               alt={`${product.productName} — IPTS`}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"

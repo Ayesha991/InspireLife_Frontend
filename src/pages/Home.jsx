@@ -8,7 +8,8 @@ export default function Home() {
   return (
     <>
       <Helmet>
-        <title>IPTS — Engineering Solutions. Delivering Excellence.</title>
+        <title>IPTS Global</title>
+        <meta name="description" content="IPTS Global provides premier industrial, engineering, and MEP products across the Middle East. Excellence in sourcing and supply." />
         <meta
           name="description"
           content="IPTS is a leading supplier of industrial, electrical, mechanical, chemical and oilfield equipment for Oil & Gas, Power, Marine and Industrial industries across UAE and the Middle East."

@@ -1,9 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Loader({ onComplete }) {
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -12,7 +17,9 @@ export default function Loader({ onComplete }) {
           clearInterval(interval);
           setTimeout(() => {
             setDone(true);
-            setTimeout(onComplete, 500);
+            setTimeout(() => {
+              if (onCompleteRef.current) onCompleteRef.current();
+            }, 500);
           }, 200);
           return 100;
         }
@@ -20,7 +27,7 @@ export default function Loader({ onComplete }) {
       });
     }, 60);
     return () => clearInterval(interval);
-  }, [onComplete]);
+  }, []);
 
   return (
     <AnimatePresence>
@@ -52,7 +59,7 @@ export default function Loader({ onComplete }) {
             </div>
 
             <div className="text-center">
-              <p className="text-white text-3xl font-bold font-['Space_Grotesk'] tracking-tight">
+              <p className="text-white text-3xl font-bold font-heading tracking-tight">
                 <span className="text-[#0057A8]">i</span>PTS
               </p>
               <p className="text-white/40 text-xs tracking-[0.2em] uppercase mt-1">

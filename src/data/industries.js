@@ -84,5 +84,3 @@ export const industries = [
     icon: 'hard-hat',
   },
 ];
-
-export const getIndustryBySlug = (slug) => industries.find(i => i.slug === slug);

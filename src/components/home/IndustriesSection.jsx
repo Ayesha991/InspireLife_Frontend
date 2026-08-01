@@ -40,7 +40,7 @@ export default function IndustriesSection() {
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
           {industries.map((ind, i) => {
             const Icon = iconMap[ind.icon] || Cog;
             const title = t(`industries.items.${ind.id}.title`);
@@ -50,27 +50,32 @@ export default function IndustriesSection() {
                 key={ind.id}
                 initial={{ opacity: 1, y: 0 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="group bg-gradient-to-br from-purple-50 to-white hover:from-purple-100 hover:to-purple-50 border border-purple-200 shadow-md shadow-purple-100/50 p-8 transition-all hover:shadow-2xl hover:-translate-y-2 relative overflow-hidden rounded-lg duration-500"
+                className="group bg-gradient-to-br from-purple-50 to-white hover:from-purple-100 hover:to-purple-50 border border-purple-200 shadow-md shadow-purple-100/50 p-8 transition-all hover:shadow-2xl hover:-translate-y-2 relative overflow-hidden rounded-lg duration-500 flex flex-col justify-between h-full"
               >
                 {/* Animated top border line */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-purple-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
 
-                <div className="relative z-10">
-                  <div className="text-purple-600 mb-6 group-hover:text-purple-800 transition-colors duration-300">
-                    <Icon size={48} strokeWidth={1.5} />
+                <div className="relative z-10 flex flex-col h-full justify-between">
+                  <div className="flex-1 flex flex-col">
+                    <div className="text-purple-600 mb-6 group-hover:text-purple-800 transition-colors duration-300">
+                      <Icon size={48} strokeWidth={1.5} />
+                    </div>
+                    <h3 className="text-xl font-bold text-[#0d1c2e] mb-4 font-heading group-hover:text-purple-700 transition-colors duration-300 min-h-[3.5rem] flex items-start">
+                      {title}
+                    </h3>
+                    <p className="text-[#43474f] text-sm leading-relaxed mb-6 flex-1">
+                      {description}
+                    </p>
                   </div>
-                  <h3 className="text-xl font-bold text-[#0d1c2e] mb-4 font-heading group-hover:text-purple-700 transition-colors duration-300">
-                    {title}
-                  </h3>
-                  <p className="text-[#43474f] text-sm leading-relaxed mb-6">
-                    {description}
-                  </p>
-                  <Link
-                    to="/industries"
-                    className="inline-flex items-center gap-2 text-sm font-bold text-purple-600 uppercase tracking-wide group-hover:text-purple-800 transition-colors"
-                  >
-                    {t('industries.viewDetails')} <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                  </Link>
+
+                  <div className="mt-auto pt-2">
+                    <Link
+                      to="/industries"
+                      className="inline-flex items-center gap-2 text-sm font-bold text-purple-600 uppercase tracking-wide group-hover:text-purple-800 transition-colors"
+                    >
+                      {t('industries.viewDetails')} <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform rtl:rotate-180" />
+                    </Link>
+                  </div>
                 </div>
 
                 {/* Watermark in background */}

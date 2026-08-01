@@ -6,7 +6,7 @@ export default function NotFound() {
   return (
     <>
       <Helmet>
-        <title>Page Not Found — IPTS</title>
+        <title>Page Not Found | IPTS Global</title>
       </Helmet>
       <main id="main-content" className="min-h-screen bg-[#F8FAFC] flex items-center justify-center px-4">
         <div className="text-center max-w-md">

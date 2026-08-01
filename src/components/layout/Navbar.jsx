@@ -3,6 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, Settings2, Search, Globe, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '../../context/LanguageContext';
+import cloudinaryAssets from '../../data/cloudinaryAssets';
 
 function LanguageDropdown() {
   const { lang, setLang, t } = useLanguage();
@@ -27,9 +28,8 @@ function LanguageDropdown() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className={`flex items-center gap-1.5 text-xs lg:text-sm font-semibold transition-colors px-2 py-1.5 rounded-md ${
-          open ? 'text-purple-700 bg-purple-50' : 'text-[#43474f] hover:text-purple-700'
-        }`}
+        className={`flex items-center gap-1.5 text-xs lg:text-sm font-semibold transition-colors px-2 py-1.5 rounded-md ${open ? 'text-purple-700 bg-purple-50' : 'text-[#43474f] hover:text-purple-700'
+          }`}
         aria-label={t('nav.languageLabel')}
         aria-expanded={open}
       >
@@ -52,11 +52,10 @@ function LanguageDropdown() {
               <button
                 key={opt.code}
                 onClick={() => { setLang(opt.code); setOpen(false); }}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors ${
-                  lang === opt.code
-                    ? 'text-purple-700 bg-purple-50'
-                    : 'text-[#43474f] hover:bg-gray-50 hover:text-purple-700'
-                }`}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium transition-colors ${lang === opt.code
+                  ? 'text-purple-700 bg-purple-50'
+                  : 'text-[#43474f] hover:bg-gray-50 hover:text-purple-700'
+                  }`}
               >
                 <span className="text-base">{opt.flag}</span>
                 <span>{opt.label}</span>
@@ -83,6 +82,7 @@ export default function Navbar() {
     { label: t('nav.home'), to: '/' },
     { label: t('nav.about'), to: '/about' },
     { label: t('nav.industries'), to: '/industries' },
+    { label: t('nav.mepSolutions') || 'MEP Solutions', to: '/mep-solutions' },
     { label: t('nav.products'), to: '/products' },
     { label: t('nav.contact'), to: '/contact' },
   ];
@@ -113,29 +113,29 @@ export default function Navbar() {
   return (
     <>
       <header
-        className="bg-[#f8f9ff] border-b border-[#c4c6d0] w-full z-50 sticky top-0"
+        className="bg-[#f8f9ff] border-b border-[#c4c6d0] w-full z-50 sticky top-0 overflow-x-hidden lg:overflow-visible"
         role="banner"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 md:py-4 flex justify-between items-center gap-4">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-2 md:py-2.5 flex justify-between items-center gap-4">
           {/* Logo */}
-          <Link to="/" aria-label="IPTS — Go to homepage" className="flex items-center gap-2 shrink-0">
-            <Settings2 className="text-purple-600 w-6 h-6 sm:w-7 sm:h-7" />
-            <span className="font-bold text-xl sm:text-2xl text-[#001736] tracking-tight font-heading">
-              IPTS
-            </span>
+          <Link to="/" aria-label="IPTS — Go to homepage" className="flex items-center shrink-0">
+            <img
+              src={cloudinaryAssets.logo || '/logo.svg'}
+              alt="IPTS - Inspire Plus Technical Services"
+              className="h-12 sm:h-12 md:h-14 w-auto object-contain transition-transform hover:scale-105"
+            />
           </Link>
 
           {/* Tablet & Desktop nav */}
-          <nav className="hidden md:flex items-center gap-3 lg:gap-6 xl:gap-8" role="navigation" aria-label="Main navigation">
+          <nav className="hidden lg:flex items-center gap-4 lg:gap-6 xl:gap-8" role="navigation" aria-label="Main navigation">
             {navLinks.map(link => (
               <NavLink
                 key={link.to}
                 to={link.to}
                 className={({ isActive }) =>
-                  `text-xs sm:text-sm lg:text-base font-semibold transition-colors ${
-                    isActive
-                      ? 'text-purple-700 border-b-2 border-purple-700 pb-0.5'
-                      : 'text-[#43474f] hover:text-purple-700'
+                  `text-xs sm:text-sm lg:text-base font-semibold transition-colors whitespace-nowrap ${isActive
+                    ? 'text-purple-700 border-b-2 border-purple-700 pb-0.5'
+                    : 'text-[#43474f] hover:text-purple-700'
                   }`
                 }
               >
@@ -145,14 +145,14 @@ export default function Navbar() {
           </nav>
 
           {/* Utility */}
-          <div className="hidden md:flex items-center gap-3 lg:gap-4 shrink-0">
+          <div className="hidden lg:flex items-center gap-3 lg:gap-4 shrink-0">
             <form onSubmit={handleSearch} className="hidden lg:flex items-center bg-white border border-[#e5e7eb] rounded-full px-3 py-1.5 focus-within:ring-2 focus-within:ring-purple-500/20 focus-within:border-purple-500 transition-all">
               <input
                 type="text"
                 placeholder={t('nav.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-transparent border-transparent !outline-none !ring-0 focus:!border-transparent focus:!ring-0 focus:!outline-none text-sm w-32 xl:w-40 text-[#43474f] placeholder:text-[#aab5c2]"
+                className="bg-transparent !border-none !outline-none !ring-0 !shadow-none focus:!border-none focus:!outline-none focus:!ring-0 focus:!shadow-none text-sm w-32 xl:w-40 text-[#43474f] placeholder:text-[#aab5c2]"
               />
               <button type="submit" className="text-[#aab5c2] hover:text-purple-700 transition-colors" aria-label="Search">
                 <Search size={16} />
@@ -180,7 +180,7 @@ export default function Navbar() {
 
           {/* Hamburger */}
           <button
-            className="md:hidden p-2 rounded-full text-[#001736] hover:bg-purple-50 transition-colors"
+            className="lg:hidden p-2 rounded-full text-[#001736] hover:bg-purple-50 transition-colors"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
@@ -190,7 +190,7 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Mobile drawer */}
+      {/* Mobile / Tablet drawer */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -198,11 +198,25 @@ export default function Navbar() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: lang === 'ar' ? '-100%' : '100%' }}
             transition={{ type: 'tween', duration: 0.3 }}
-            className="fixed inset-0 z-40 bg-[#001736]/95 backdrop-blur-xl flex flex-col pt-24 pb-10 px-6 overflow-y-auto text-white"
+            className="fixed inset-0 z-40 bg-[#001736]/95 backdrop-blur-xl flex flex-col pt-24 pb-10 px-6 overflow-hidden h-screen h-[100dvh] touch-none text-white"
             role="dialog"
             aria-modal="true"
             aria-label="Navigation menu"
           >
+            {/* Search input in mobile/tablet menu */}
+            <form onSubmit={handleSearch} className="mb-6 flex items-center bg-white/10 border border-white/20 rounded-lg px-4 py-2.5">
+              <input
+                type="text"
+                placeholder={t('nav.searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="bg-transparent !border-none !outline-none !ring-0 !shadow-none focus:!border-none focus:!outline-none focus:!ring-0 focus:!shadow-none text-sm w-full text-white placeholder:text-white/50"
+              />
+              <button type="submit" className="text-white/70 hover:text-white" aria-label="Search">
+                <Search size={18} />
+              </button>
+            </form>
+
             <nav className="flex flex-col gap-1" role="navigation">
               {navLinks.map((link, i) => (
                 <motion.div
@@ -214,10 +228,9 @@ export default function Navbar() {
                   <NavLink
                     to={link.to}
                     className={({ isActive }) =>
-                      `block py-4 text-xl font-bold border-b border-white/10 transition-colors ${
-                        isActive
-                          ? 'text-[#aac7ff] border-purple-400'
-                          : 'text-white/90 hover:text-purple-300'
+                      `block py-4 text-xl font-bold border-b border-white/10 transition-colors ${isActive
+                        ? 'text-[#aac7ff] border-purple-400'
+                        : 'text-white/90 hover:text-purple-300'
                       }`
                     }
                   >
@@ -233,11 +246,10 @@ export default function Navbar() {
                 <button
                   key={opt.code}
                   onClick={() => setLang(opt.code)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold border transition-all ${
-                    lang === opt.code
-                      ? 'bg-purple-600 text-white border-purple-500 shadow-md'
-                      : 'bg-white/10 text-white/90 border-white/20 hover:bg-white/20'
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold border transition-all ${lang === opt.code
+                    ? 'bg-purple-600 text-white border-purple-500 shadow-md'
+                    : 'bg-white/10 text-white/90 border-white/20 hover:bg-white/20'
+                    }`}
                 >
                   <span>{opt.flag}</span>
                   <span>{opt.label}</span>

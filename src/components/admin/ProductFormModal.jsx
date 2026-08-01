@@ -7,7 +7,41 @@ export default function ProductFormModal({ isOpen, onClose, product, onSuccess }
   const { token } = useAuth();
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    setError(null);
+
+    const body = new FormData();
+    body.append('image', file);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Image upload failed');
+      }
+
+      setFormData(prev => ({ ...prev, image: data.data.imageUrl }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const [formData, setFormData] = useState({
     productName: '',
@@ -131,16 +165,35 @@ export default function ProductFormModal({ isOpen, onClose, product, onSuccess }
             </div>
 
             <div>
-              <label className="block text-sm font-bold text-[#071C33] mb-2">{t('productForm.imageUrl')}</label>
-              <input
-                type="url"
-                name="image"
-                value={formData.image}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded border border-[#EEF2F6] bg-[#f8f9fc] focus:bg-white focus:border-purple-500 transition-all text-[#071C33]"
-                style={{ boxShadow: 'none', outline: 'none' }}
-                placeholder="https://example.com/image.jpg"
-              />
+              <label className="block text-sm font-bold text-[#071C33] mb-2">Product Image (Cloudinary Upload / URL)</label>
+              <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                <input
+                  type="url"
+                  name="image"
+                  value={formData.image}
+                  onChange={handleChange}
+                  className="flex-1 w-full px-4 py-3 rounded border border-[#EEF2F6] bg-[#f8f9fc] focus:bg-white focus:border-purple-500 transition-all text-[#071C33]"
+                  style={{ boxShadow: 'none', outline: 'none' }}
+                  placeholder="https://res.cloudinary.com/... or paste URL"
+                />
+                <label className="cursor-pointer px-4 py-3 bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold rounded border border-purple-200 text-sm whitespace-nowrap flex items-center gap-2 transition-all">
+                  {uploading ? <Loader2 size={16} className="animate-spin" /> : null}
+                  {uploading ? 'Uploading to Cloudinary...' : 'Upload Image File'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    disabled={uploading}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+              {formData.image && (
+                <div className="mt-3 flex items-center gap-3 p-2 bg-[#f8f9fc] rounded border border-[#EEF2F6] w-fit">
+                  <img src={formData.image} alt="Preview" className="w-12 h-12 object-cover rounded" />
+                  <span className="text-xs text-[#071C33]/70 truncate max-w-xs">{formData.image}</span>
+                </div>
+              )}
             </div>
 
             <div>

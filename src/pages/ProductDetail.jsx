@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Download, ChevronRight, CheckCircle2, Flame, Zap, ShieldCheck, Settings2, BadgeCheck, FileText, Blocks, Loader2 } from 'lucide-react';
 import { productDetailsMap, categoryDetailsMap } from '../data/productDetails';
 import GlowCard from '../components/common/GlowCard';
+import CloudinaryImage from '../components/common/CloudinaryImage';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const PLACEHOLDER_IMG = 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&q=80';
@@ -118,7 +119,7 @@ export default function ProductDetail() {
   return (
     <>
       <Helmet>
-        <title>{product.productName} — IPTS Products</title>
+        <title>{product.productName} | IPTS Global</title>
         <meta name="description" content={product.overview || `View details for ${product.productName}`} />
       </Helmet>
 
@@ -161,7 +162,7 @@ export default function ProductDetail() {
                 animate={{ opacity: 1 }}
                 key={activeImg}
               >
-                <img
+                <CloudinaryImage
                   src={images[activeImg]}
                   alt={`${product.productName} — IPTS`}
                   className="w-full h-full object-contain mix-blend-multiply drop-shadow-xl"
@@ -178,7 +179,7 @@ export default function ProductDetail() {
                         }`}
                       aria-label={`View image ${i + 1}`}
                     >
-                      <img src={img} alt="" className="w-full h-full object-contain mix-blend-multiply" />
+                      <CloudinaryImage src={img} alt="" className="w-full h-full object-contain mix-blend-multiply" />
                     </button>
                   ))}
                 </div>

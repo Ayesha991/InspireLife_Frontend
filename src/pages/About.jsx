@@ -6,9 +6,12 @@ import { ChevronRight, Target, Eye, CheckCircle2, MessageSquare, ShieldCheck, Sm
 import FlipCard from '../components/common/FlipCard';
 import PeelCard from '../components/common/PeelCard';
 import { useLanguage } from '../context/LanguageContext';
+import cloudinaryAssets from '../data/cloudinaryAssets';
 
-const HERO_IMAGE = 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1600&q=80';
-const PHIL_IMAGE = 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&q=80';
+const desktopAboutHero = cloudinaryAssets.desktop['About_hero.webp'];
+const mobileAboutHero = cloudinaryAssets.mobile['About_hero.webp'];
+const desktopAboutPhil = cloudinaryAssets.desktop['About_section.webp'];
+const mobileAboutPhil = cloudinaryAssets.mobile['About_section.webp'];
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
@@ -52,7 +55,7 @@ export default function About() {
   return (
     <>
       <Helmet>
-        <title>{t('aboutPage.pageTitle')} | IPTS</title>
+        <title>{t('aboutPage.pageTitle')} | IPTS Global</title>
         <meta name="description" content={t('aboutPage.pageDesc')} />
       </Helmet>
 
@@ -60,22 +63,18 @@ export default function About() {
         {/* --- 1. Hero Section & Overlapping Cards --- */}
         <section className="relative">
           {/* Hero Banner */}
-          <div className="relative pt-32 pb-48 md:pt-40 md:pb-56 bg-[#071C33] overflow-hidden" ref={heroRef}>
+          <div className="relative pt-16 pb-44 md:pt-24 md:pb-52 bg-[#071C33] overflow-hidden" ref={heroRef}>
             <div className="absolute inset-0 z-0">
-              <img src={HERO_IMAGE} alt="Industrial Facility" className="w-full h-full object-cover opacity-30" />
+              <picture className="w-full h-full">
+                <source media="(max-width: 1023px)" srcSet={mobileAboutHero} />
+                <img src={desktopAboutHero} alt="Industrial Facility" className="w-full h-full object-cover opacity-30" />
+              </picture>
               <div className="absolute inset-0 bg-gradient-to-t from-[#071C33] via-[#071C33]/80 to-transparent" />
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 relative z-10">
+            <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
               <motion.div initial="hidden" animate={heroInView ? 'visible' : 'hidden'} variants={staggerContainer} className="max-w-3xl">
-                <motion.nav variants={fadeInUp} aria-label="Breadcrumb" className="mb-4">
-                  <ol className="flex items-center gap-2 text-sm text-white/70">
-                    <li><Link to="/" className="hover:text-white transition-colors">{t('aboutPage.breadcrumbHome')}</Link></li>
-                    <li><ChevronRight size={14} /></li>
-                    <li className="text-white font-medium">{t('aboutPage.breadcrumbAbout')}</li>
-                  </ol>
-                </motion.nav>
-                <motion.h1 variants={fadeInUp} className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 font-heading tracking-tight">
+                <motion.h1 variants={fadeInUp} className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6 font-heading tracking-tight">
                   {t('aboutPage.pageTitle')}
                 </motion.h1>
                 <motion.p variants={fadeInUp} className="text-lg md:text-xl text-[#d5e3fc]/90 leading-relaxed max-w-2xl">
@@ -176,7 +175,10 @@ export default function About() {
 
               <motion.div initial="hidden" animate={philInView ? 'visible' : 'hidden'} variants={fadeInUp} className="hidden lg:block flex-1 relative w-full">
                 <div className="rounded-2xl overflow-hidden shadow-2xl relative aspect-[4/3] w-full max-w-[500px] ltr:ml-auto rtl:mr-auto">
-                  <img src={PHIL_IMAGE} alt="Industrial professionals" className="w-full h-full object-cover" />
+                  <picture className="w-full h-full">
+                    <source media="(max-width: 1023px)" srcSet={mobileAboutPhil} />
+                    <img src={desktopAboutPhil} alt="Industrial professionals" className="w-full h-full object-cover" />
+                  </picture>
                 </div>
               </motion.div>
             </div>

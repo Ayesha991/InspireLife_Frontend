@@ -16,7 +16,7 @@ const translateDynamic = (type, text, lang) => {
 };
 
 export default function Dashboard() {
-  const { user, token, logout } = useAuth();
+  const { admin, token, logout, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { t, lang } = useLanguage();
 
@@ -31,6 +31,11 @@ export default function Dashboard() {
     try {
       setLoading(true);
       const res = await fetch(`${import.meta.env.VITE_API_URL}/products?limit=1000`);
+      if (res.status === 401 || res.status === 403) {
+        logout();
+        navigate('/', { replace: true });
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setProducts(data.data);
@@ -45,12 +50,18 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    fetchProducts();
-  }, []);
+    if (!authLoading) {
+      if (!token || !admin) {
+        navigate('/', { replace: true });
+      } else {
+        fetchProducts();
+      }
+    }
+  }, [token, admin, authLoading, navigate]);
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/', { replace: true });
   };
 
   const handleAddProduct = () => {
@@ -96,22 +107,22 @@ export default function Dashboard() {
   return (
     <>
       <Helmet>
-        <title>{t('dashboard.pageTitle')}</title>
+        <title>{t('dashboard.pageTitle')} | IPTS Global</title>
       </Helmet>
 
       <main className="bg-[#f8f9fc] min-h-screen p-4 sm:p-6 md:p-8">
         <div className="max-w-7xl mx-auto">
           
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 bg-white p-6 rounded-2xl border border-[#EEF2F6] shadow-sm">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-[#071C33] font-heading mb-1">{t('dashboard.heading')}</h1>
-              <p className="text-sm sm:text-base text-[#071C33]/70">{t('dashboard.welcome')} {user?.name || 'Admin'}!</p>
+              <p className="text-sm sm:text-base text-[#071C33]/70">{t('dashboard.welcome')} <span className="font-semibold text-purple-700">{admin?.username || admin?.email || 'Admin'}</span>!</p>
             </div>
             
             <button 
               onClick={handleLogout}
-              className="flex items-center justify-center gap-2 px-5 py-2.5 bg-purple-700 hover:bg-purple-600 text-white text-sm font-semibold rounded shadow-sm transition-all whitespace-nowrap shrink-0 self-start sm:self-auto"
+              className="flex items-center justify-center gap-2 px-5 py-2.5 bg-purple-700 hover:bg-purple-600 text-white text-sm font-semibold rounded-lg shadow-sm transition-all whitespace-nowrap shrink-0 self-start sm:self-auto"
             >
               <LogOut size={18} className="shrink-0" />
               <span>{t('dashboard.signOut')}</span>

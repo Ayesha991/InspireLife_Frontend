@@ -17,6 +17,17 @@ import {
 import { industries } from '../data/industries';
 import TiltCard from '../components/common/TiltCard';
 import { useLanguage } from '../context/LanguageContext';
+import cloudinaryAssets from '../data/cloudinaryAssets';
+
+const desktopIndHero = cloudinaryAssets.desktop['industry_hero.webp'];
+const mobileIndHero = cloudinaryAssets.mobile['industry_hero.webp'];
+const desktopIndSec1 = cloudinaryAssets.desktop['Industry_section1.webp'];
+const mobileIndSec1 = cloudinaryAssets.mobile['industry_section1.jpg'];
+const desktopIndSec2 = cloudinaryAssets.desktop['indusrt_section2.webp'];
+const desktopIndSec3 = cloudinaryAssets.desktop['industry_section3.webp'];
+const mobileIndSec3 = cloudinaryAssets.mobile['industry_section3.webp'];
+const desktopIndSec4 = cloudinaryAssets.desktop['industry_section4.webp'];
+const mobileIndSec4 = cloudinaryAssets.mobile['industry_section4.webp'];
 
 const getIcon = (name) => {
   switch (name) {
@@ -40,7 +51,8 @@ export default function Industries() {
   return (
     <>
       <Helmet>
-        <title>{t('industriesPage.pageTitle')} | IPTS</title>
+        <title>{t('industriesPage.pageTitle')} | IPTS Global</title>
+        <meta name="description" content="Explore the diverse industries supported by IPTS Global, including Oil & Gas, Marine, Construction, and Manufacturing." />
         <meta
           name="description"
           content={t('industriesPage.pageDesc')}
@@ -50,22 +62,22 @@ export default function Industries() {
       <main id="main-content" className="bg-[#f8f9fc]">
 
         {/* Hero Section */}
-        <div className="relative w-full min-h-[550px] md:h-[600px] flex items-center bg-[#071C33] overflow-hidden py-20 md:py-0">
+        <div className="relative w-full min-h-[550px] md:h-[600px] flex items-center bg-[#071C33] text-white overflow-hidden py-20 md:py-0">
           {/* Background Image */}
           <div className="absolute inset-0 z-0">
-            <img
-              src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?w=1600&q=80"
-              alt="Industrial Refinery at dusk"
-              className="w-full h-full object-cover opacity-40 mix-blend-overlay"
-            />
+            <picture className="w-full h-full">
+              <source media="(max-width: 1023px)" srcSet={mobileIndHero} />
+              <img
+                src={desktopIndHero}
+                alt="Industrial Refinery at dusk"
+                className="w-full h-full object-cover opacity-40 mix-blend-overlay"
+              />
+            </picture>
             <div className="absolute inset-0 bg-gradient-to-r from-[#071C33] via-[#071C33]/80 to-transparent rtl:bg-gradient-to-l" />
           </div>
 
-          <div className="relative z-10 max-w-7xl mx-auto px-6 w-full pt-10 md:pt-0">
-            <p className="text-purple-400 font-bold text-xs uppercase tracking-widest mb-4">
-              {t('industriesPage.heroLabel')}
-            </p>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white font-heading leading-tight mb-6 max-w-2xl">
+          <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 w-full">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white font-heading leading-tight mb-6 max-w-2xl">
               {t('industriesPage.heroHeading1')}<br />{t('industriesPage.heroHeading2')}<br />{t('industriesPage.heroHeading3')}
             </h1>
             <p className="text-[#d5e3fc] text-base md:text-lg max-w-2xl leading-relaxed mb-8 md:mb-10">
@@ -98,7 +110,7 @@ export default function Industries() {
               </div>
             </div>
 
-            <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div ref={gridRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
               {industries.map((ind, i) => (
                 <motion.article
                   key={ind.id}
@@ -107,16 +119,18 @@ export default function Industries() {
                   transition={{ delay: i * 0.1, duration: 0.5 }}
                   className="h-full"
                 >
-                  <TiltCard className="bg-white rounded-xl p-8 border border-purple-200 flex flex-col h-full shadow-sm hover:border-purple-400">
-                    <div className="relative z-10 w-14 h-14 bg-purple-50 text-purple-600 flex items-center justify-center rounded-lg mb-6">
-                      {getIcon(ind.icon)}
+                  <TiltCard className="bg-white rounded-xl p-8 border border-purple-200 flex flex-col justify-between h-full shadow-sm hover:border-purple-400">
+                    <div className="flex-1 flex flex-col">
+                      <div className="relative z-10 w-14 h-14 bg-purple-50 text-purple-600 flex items-center justify-center rounded-lg mb-6">
+                        {getIcon(ind.icon)}
+                      </div>
+                      <h3 className="relative z-10 font-bold text-[#071C33] text-lg mb-3 min-h-[3.5rem] flex items-start">
+                        {t(`industries.items.${ind.id}.title`)}
+                      </h3>
+                      <p className="relative z-10 text-[#071C33]/60 text-sm leading-relaxed flex-1">
+                        {t(`industries.items.${ind.id}.description`)}
+                      </p>
                     </div>
-                    <h3 className="relative z-10 font-bold text-[#071C33] text-lg mb-3">
-                      {t(`industries.items.${ind.id}.title`)}
-                    </h3>
-                    <p className="relative z-10 text-[#071C33]/60 text-sm leading-relaxed">
-                      {t(`industries.items.${ind.id}.description`)}
-                    </p>
                   </TiltCard>
                 </motion.article>
               ))}
@@ -174,12 +188,21 @@ export default function Industries() {
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
                 <div className="flex flex-col gap-4 pt-12">
-                  <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&q=80" alt="Gears" className="rounded-xl w-full object-cover aspect-[4/5] shadow-2xl" />
-                  <img src="https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?w=600&q=80" alt="Engineers" className="rounded-xl w-full object-cover aspect-square shadow-2xl" />
+                  <img src={desktopIndSec2} alt="Gears" className="rounded-xl w-full object-cover aspect-[4/5] shadow-2xl" />
+                  <picture className="w-full">
+                    <source media="(max-width: 1023px)" srcSet={mobileIndSec3} />
+                    <img src={desktopIndSec3} alt="Engineers" className="rounded-xl w-full object-cover aspect-square shadow-2xl" />
+                  </picture>
                 </div>
                 <div className="flex flex-col gap-4 pb-12">
-                  <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80" alt="Welding" className="rounded-xl w-full object-cover aspect-square shadow-2xl" />
-                  <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80" alt="Control Room" className="rounded-xl w-full object-cover aspect-[4/5] shadow-2xl" />
+                  <picture className="w-full">
+                    <source media="(max-width: 1023px)" srcSet={mobileIndSec4} />
+                    <img src={desktopIndSec4} alt="Welding" className="rounded-xl w-full object-cover aspect-square shadow-2xl" />
+                  </picture>
+                  <picture className="w-full">
+                    <source media="(max-width: 1023px)" srcSet={mobileIndSec1} />
+                    <img src={desktopIndSec1} alt="Control Room" className="rounded-xl w-full object-cover aspect-[4/5] shadow-2xl" />
+                  </picture>
                 </div>
               </motion.div>
 
