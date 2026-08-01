@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link, useParams, Navigate, useNavigate } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Download, ChevronRight, CheckCircle2, Flame, Zap, ShieldCheck, Settings2, BadgeCheck, FileText, Blocks, Loader2 } from 'lucide-react';
-import { productDetailsMap, categoryDetailsMap } from '../data/productDetails';
+import { ArrowRight, ChevronRight, CheckCircle2, Flame, Zap, ShieldCheck, Settings2, BadgeCheck, FileText, Blocks, Loader2 } from 'lucide-react';
+import { productDetailsMap } from '../data/productDetails';
 import GlowCard from '../components/common/GlowCard';
 import CloudinaryImage from '../components/common/CloudinaryImage';
 
@@ -24,8 +24,7 @@ const getFeatureIcon = (feature) => {
 };
 
 export default function ProductDetail() {
-  const { categorySlug, productSlug } = useParams();
-  const navigate = useNavigate();
+  const { productSlug } = useParams();
   const [activeTab, setActiveTab] = useState('Overview');
   const [activeImg, setActiveImg] = useState(0);
 

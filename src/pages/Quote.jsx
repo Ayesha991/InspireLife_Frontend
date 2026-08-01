@@ -109,7 +109,6 @@ function FloatingSelect({ label, name, options, required = true }) {
 function FloatingTextarea({ label, name, required = true }) {
   const [val, setVal] = useState('');
   const [focused, setFocused] = useState(false);
-  const active = focused || val.length > 0;
   return (
     <div className="floating-label-group">
       <textarea name={name} id={`quote-${name}`} placeholder=" " required={required}
@@ -134,8 +133,6 @@ export default function Quote() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  const initialProduct = '';
 
   const handleSubmit = async (e) => {
     e.preventDefault();

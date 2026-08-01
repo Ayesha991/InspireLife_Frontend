@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Search, ArrowRight, ChevronRight, ShoppingCart, ChevronDown, ChevronLeft, Loader2, PackageX } from 'lucide-react';
+import { ArrowRight, ChevronRight, ShoppingCart, ChevronLeft, Loader2, PackageX } from 'lucide-react';
 import { productDetailsMap } from '../data/productDetails';
 import GlowCard from '../components/common/GlowCard';
 import CloudinaryImage from '../components/common/CloudinaryImage';
@@ -29,7 +29,7 @@ export default function Products() {
   const [products, setProducts] = useState([]);
   const [pagination, setPagination] = useState(null);
   
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [activeCategory, setActiveCategory] = useState(categorySlug || '');
   const [page, setPage] = useState(1);
@@ -323,7 +323,7 @@ export default function Products() {
   );
 }
 
-function ProductCard({ product, index, t, lang }) {
+function ProductCard({ product, t, lang }) {
   const imgUrl = product.image || PLACEHOLDER_IMG;
 
   return (

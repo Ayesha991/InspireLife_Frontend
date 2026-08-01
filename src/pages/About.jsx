@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { Link } from 'react-router-dom';
 import { ChevronRight, Target, Eye, CheckCircle2, MessageSquare, ShieldCheck, Smile, MapPin, Building2, Warehouse, ClipboardList, Layers, Users, Globe } from 'lucide-react';
-import FlipCard from '../components/common/FlipCard';
 import PeelCard from '../components/common/PeelCard';
 import { useLanguage } from '../context/LanguageContext';
 import cloudinaryAssets from '../data/cloudinaryAssets';
