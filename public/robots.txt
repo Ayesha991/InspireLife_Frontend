@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://ipts.ae/sitemap.xml
+Sitemap: https://iptsglobal.com/sitemap.xml
