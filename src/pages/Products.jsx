@@ -3,18 +3,15 @@ import { Helmet } from 'react-helmet-async';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, ChevronRight, ShoppingCart, ChevronLeft, Loader2, PackageX } from 'lucide-react';
-import { productDetailsMap } from '../data/productDetails';
+import { useLanguage } from '../context/LanguageContext';
 import GlowCard from '../components/common/GlowCard';
 import CloudinaryImage from '../components/common/CloudinaryImage';
-import { useLanguage } from '../context/LanguageContext';
-import { dynamicTranslations } from '../data/dynamicTranslations';
 
-const translateDynamic = (type, text, lang) => {
-  if (!text) return text;
-  if (lang === 'ar' && dynamicTranslations[type] && dynamicTranslations[type][text]) {
-    return dynamicTranslations[type][text];
+const getTranslation = (item, fieldEn, fieldAr, lang) => {
+  if (lang === 'ar' && item && item[fieldAr]) {
+    return item[fieldAr];
   }
-  return text;
+  return (item && item[fieldEn]) || '';
 };
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
@@ -75,37 +72,14 @@ export default function Products() {
         let url = `${API_URL}/products?page=${page}&limit=12`;
         if (activeCategory) url += `&category=${activeCategory}`;
         if (search) {
-          let finalSearch = search;
-          if (lang === 'ar') {
-            const mappedSearchTerms = [];
-            const searchLower = search.toLowerCase();
-            Object.entries(dynamicTranslations.products).forEach(([en, ar]) => {
-              if (ar.toLowerCase().includes(searchLower)) mappedSearchTerms.push(en);
-            });
-            Object.entries(dynamicTranslations.categories).forEach(([en, ar]) => {
-              if (ar.toLowerCase().includes(searchLower)) mappedSearchTerms.push(en);
-            });
-            if (mappedSearchTerms.length > 0) {
-              // Limit to 30 to avoid URI too long errors when search matches many items
-              finalSearch = mappedSearchTerms.slice(0, 30).join('|');
-            }
-          }
-          url += `&search=${encodeURIComponent(finalSearch)}`;
+          url += `&search=${encodeURIComponent(search)}`;
         }
 
         const res = await fetch(url);
         const data = await res.json();
         
         if (data.success) {
-          const enrichedProducts = data.data.map(p => {
-            const mdData = productDetailsMap[p.productName];
-            let enriched = { ...p };
-            if (mdData) {
-              enriched = { ...enriched, ...mdData };
-            }
-            return enriched;
-          });
-          setProducts(enrichedProducts);
+          setProducts(data.data);
           setPagination(data.pagination);
         }
       } catch (err) {
@@ -162,7 +136,7 @@ export default function Products() {
               <div className="flex gap-6 overflow-x-auto border-b border-[#EEF2F6] no-scrollbar snap-x pb-0.5">
                 {categories.map((cat) => {
                   const isActive = activeCategory === cat.slug;
-                  const catName = cat.slug ? translateDynamic('categories', cat.name, lang) : cat.name;
+                  const catName = cat.slug ? getTranslation(cat, 'name', 'nameAr', lang) : cat.name;
                   return (
                     <button
                       key={cat.slug || 'all'}
@@ -209,7 +183,7 @@ export default function Products() {
                           : 'text-[#071C33] hover:bg-white hover:shadow-sm'
                         }`}
                     >
-                      <span className="truncate ltr:pr-2 rtl:pl-2">{cat.slug ? translateDynamic('categories', cat.name, lang) : cat.name}</span>
+                      <span className="truncate ltr:pr-2 rtl:pl-2">{cat.slug ? getTranslation(cat, 'name', 'nameAr', lang) : cat.name}</span>
                       {isActive ? <ChevronRight size={16} className="shrink-0 rtl:rotate-180" /> : <span className="text-xs opacity-50 shrink-0">{cat.productCount > 0 ? cat.productCount : ''}</span>}
                     </button>
                   )
@@ -234,7 +208,7 @@ export default function Products() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <p className="text-sm text-black">
                   {pagination ? (
-                    <>{t('productsPage.showing')} <span className="font-bold">{products.length}</span> {t('productsPage.of')} <span className="font-bold">{pagination.totalProducts}</span> {t('productsPage.in')} <span className="font-bold">{currentCat?.slug ? translateDynamic('categories', currentCat.name, lang) : currentCat?.name || t('productsPage.allCategories')}</span></>
+                    <>{t('productsPage.showing')} <span className="font-bold">{products.length}</span> {t('productsPage.of')} <span className="font-bold">{pagination.totalProducts}</span> {t('productsPage.in')} <span className="font-bold">{currentCat?.slug ? getTranslation(currentCat, 'name', 'nameAr', lang) : currentCat?.name || t('productsPage.allCategories')}</span></>
                   ) : (
                     'Loading...'
                   )}
@@ -350,14 +324,14 @@ function ProductCard({ product, t, lang }) {
           </div>
 
           <div className="p-6 flex flex-col flex-1 relative bg-white">
-            <p className="text-purple-600 text-xs font-bold uppercase tracking-wider mb-2 truncate">{translateDynamic('categories', product.category, lang)}</p>
+            <p className="text-purple-600 text-xs font-bold uppercase tracking-wider mb-2 truncate">{getTranslation(product, 'category', 'categoryAr', lang)}</p>
             <h3 className="font-bold text-[#071C33] text-lg leading-tight font-heading mb-2 group-hover:text-purple-700 transition-colors line-clamp-2 text-start">
-              {translateDynamic('products', product.productName, lang)}
+              {getTranslation(product, 'productName', 'productNameAr', lang)}
             </h3>
             
-            {product.specifications && (
+            {getTranslation(product, 'specifications', 'specificationsAr', lang) && (
               <p className="text-sm text-[#071C33]/70 line-clamp-3 mb-4 text-start">
-                {product.specifications}
+                {getTranslation(product, 'specifications', 'specificationsAr', lang)}
               </p>
             )}
 
