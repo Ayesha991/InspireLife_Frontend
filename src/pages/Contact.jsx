@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Phone, Mail, MapPin, Send, Check, ChevronDown } from 'lucide-react';
 import { company } from '../data/company';
 import { useLanguage } from '../context/LanguageContext';
+import { useSubmitContact } from '../hooks/useMutations';
 
 function FloatingInput({ label, type = 'text', name, required = true, ...props }) {
   const [focused, setFocused] = useState(false);
@@ -136,35 +137,19 @@ function FloatingSelect({ label, name, options, required = true }) {
 export default function Contact() {
   const { t } = useLanguage();
   const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const contactMutation = useSubmitContact();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-
     const formData = new FormData(e.target);
     const data = Object.fromEntries(formData.entries());
-
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/contact`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      const resData = await res.json();
-      if (!res.ok) throw new Error(resData.message || 'Failed to send message');
-      
-      setSubmitted(true);
-    } catch (err) {
-      console.error(err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    contactMutation.mutate(data, {
+      onSuccess: () => setSubmitted(true),
+    });
   };
+
+  const loading = contactMutation.isPending;
+  const error = contactMutation.error?.message ?? null;
 
   return (
     <>

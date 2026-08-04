@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Check, ChevronDown } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useSubmitQuote } from '../hooks/useMutations';
 
 function FloatingInput({ label, name, type = 'text', required = true, initialValue = '', placeholderText = '' }) {
   const [val, setVal] = useState(initialValue);
@@ -131,14 +132,10 @@ export default function Quote() {
   const { t } = useLanguage();
   const productOptions = t('quote.productOptions') || [];
   const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const quoteMutation = useSubmitQuote();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-
     const formData = new FormData(e.target);
     const data = {
       companyName: formData.get('company'),
@@ -146,27 +143,15 @@ export default function Quote() {
       email: formData.get('email'),
       phone: formData.get('phone'),
       requestedProducts: `Category: ${formData.get('category')}\nProduct: ${formData.get('product')}\nQuantity: ${formData.get('quantity')}`,
-      requirements: formData.get('requirements')
+      requirements: formData.get('requirements'),
     };
-
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/quote`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      const resData = await res.json();
-      if (!res.ok) throw new Error(resData.message || 'Failed to submit quote request');
-
-      setSubmitted(true);
-    } catch (err) {
-      console.error(err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    quoteMutation.mutate(data, {
+      onSuccess: () => setSubmitted(true),
+    });
   };
+
+  const loading = quoteMutation.isPending;
+  const error = quoteMutation.error?.message ?? null;
 
   return (
     <>

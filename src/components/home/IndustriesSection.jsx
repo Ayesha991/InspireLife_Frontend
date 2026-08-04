@@ -4,6 +4,7 @@ import { useInView } from 'react-intersection-observer';
 import { ArrowRight, Flame, Zap, FlaskConical, Factory, Anchor, Droplets, Cog, HardHat } from 'lucide-react';
 import { industries } from '../../data/industries';
 import { useLanguage } from '../../context/LanguageContext';
+import ScrollReveal from '../common/ScrollReveal';
 
 const iconMap = {
   'flame': Flame,
@@ -16,19 +17,37 @@ const iconMap = {
   'hard-hat': HardHat
 };
 
+// Stagger container variant
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 40 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] },
+  },
+};
+
 export default function IndustriesSection() {
-  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
+  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.08 });
   const { t } = useLanguage();
 
   return (
     <section
-      ref={ref}
       className="py-12 md:py-20 technical-grid bg-[#f8f9ff]"
       aria-labelledby="industries-heading"
     >
       <div className="max-w-7xl mx-auto px-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 mb-8 md:mb-12">
+        {/* Header — slides in from left */}
+        <ScrollReveal variant="slideLeft" className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 mb-8 md:mb-12">
           <div className="max-w-2xl mb-10 md:mb-0">
             <p className="text-sm font-semibold text-purple-600 uppercase tracking-widest mb-2">
               {t('industries.label')}
@@ -37,22 +56,27 @@ export default function IndustriesSection() {
               {t('industries.heading')}
             </h2>
           </div>
-        </div>
+        </ScrollReveal>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
-          {industries.map((ind, i) => {
+        {/* Grid — staggered cards */}
+        <motion.div
+          ref={ref}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch"
+          variants={containerVariants}
+          initial="hidden"
+          animate={inView ? 'visible' : 'hidden'}
+        >
+          {industries.map((ind) => {
             const Icon = iconMap[ind.icon] || Cog;
             const title = t(`industries.items.${ind.id}.title`);
             const description = t(`industries.items.${ind.id}.description`);
             return (
               <motion.div
                 key={ind.id}
-                initial={{ opacity: 1, y: 0 }}
-                animate={{ opacity: 1, y: 0 }}
+                variants={cardVariants}
                 className="group bg-gradient-to-br from-purple-50 to-white hover:from-purple-100 hover:to-purple-50 border border-purple-200 shadow-md shadow-purple-100/50 p-8 transition-all hover:shadow-2xl hover:-translate-y-2 relative overflow-hidden rounded-lg duration-500 flex flex-col justify-between h-full"
               >
-                {/* Animated top border line */}
+                {/* Animated top border */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-500 to-purple-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
 
                 <div className="relative z-10 flex flex-col h-full justify-between">
@@ -78,14 +102,14 @@ export default function IndustriesSection() {
                   </div>
                 </div>
 
-                {/* Watermark in background */}
+                {/* Watermark */}
                 <div className="absolute -bottom-6 -right-6 text-[#e6eeff] opacity-40 transition-transform duration-500 group-hover:scale-110 pointer-events-none">
                   <Icon size={140} strokeWidth={1} />
                 </div>
               </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

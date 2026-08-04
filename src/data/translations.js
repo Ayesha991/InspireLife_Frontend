@@ -274,6 +274,7 @@ export const translations = {
       showing: 'Showing',
       of: 'of',
       in: 'in',
+      allLoaded: 'All products loaded',
     },
 
     // ─── Login Page ───
@@ -704,6 +705,7 @@ export const translations = {
       showing: 'عرض',
       of: 'من',
       in: 'في',
+      allLoaded: 'تم تحميل جميع المنتجات',
     },
 
     // ─── Login Page ───

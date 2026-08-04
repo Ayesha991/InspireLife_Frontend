@@ -2,45 +2,25 @@ import { useState, useEffect } from 'react';
 import { X, Loader2, Save } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { useSaveProduct, useUploadImage } from '../../hooks/useMutations';
 
 export default function ProductFormModal({ isOpen, onClose, product, onSuccess }) {
   const { token } = useAuth();
   const { t } = useLanguage();
-  const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState(null);
+
+  const uploadMutation = useUploadImage(token);
+  const saveMutation = useSaveProduct(token);
+
+  const uploading = uploadMutation.isPending;
+  const loading = saveMutation.isPending;
+  const error = uploadMutation.error?.message ?? saveMutation.error?.message ?? null;
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
-    setUploading(true);
-    setError(null);
-
-    const body = new FormData();
-    body.append('image', file);
-
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/upload`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        body
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Image upload failed');
-      }
-
-      setFormData(prev => ({ ...prev, image: data.data.imageUrl }));
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setUploading(false);
-    }
+    uploadMutation.mutate(file, {
+      onSuccess: (data) => setFormData((prev) => ({ ...prev, image: data.data.imageUrl })),
+    });
   };
 
   const [formData, setFormData] = useState({
@@ -59,56 +39,31 @@ export default function ProductFormModal({ isOpen, onClose, product, onSuccess }
         specifications: product.specifications || '',
       });
     } else {
-      setFormData({
-        productName: '',
-        category: '',
-        image: '',
-        specifications: '',
-      });
+      setFormData({ productName: '', category: '', image: '', specifications: '' });
     }
-    setError(null);
+    uploadMutation.reset();
+    saveMutation.reset();
   }, [product, isOpen]);
 
   if (!isOpen) return null;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    const isEditing = !!product;
-    const url = isEditing 
-      ? `${import.meta.env.VITE_API_URL}/products/${product._id}`
-      : `${import.meta.env.VITE_API_URL}/products`;
-
-    try {
-      const response = await fetch(url, {
-        method: isEditing ? 'PUT' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+    const isEdit = !!product;
+    saveMutation.mutate(
+      { product: isEdit ? { ...formData, _id: product._id } : formData, isEdit },
+      {
+        onSuccess: (data) => {
+          onSuccess(data.data);
+          onClose();
         },
-        body: JSON.stringify(formData)
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Operation failed');
       }
-
-      onSuccess(data.data);
-      onClose();
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+    );
   };
 
   return (

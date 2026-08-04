@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ChevronRight, CheckCircle2, Flame, Zap, ShieldCheck, Settings2, BadgeCheck, FileText, Blocks, Loader2 } from 'lucide-react';
 import GlowCard from '../components/common/GlowCard';
 import CloudinaryImage from '../components/common/CloudinaryImage';
 import { useLanguage } from '../context/LanguageContext';
+import { useProductDetail } from '../hooks/useProducts';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const PLACEHOLDER_IMG = 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&q=80';
@@ -29,45 +30,9 @@ export default function ProductDetail() {
   const [activeTab, setActiveTab] = useState('Overview');
   const [activeImg, setActiveImg] = useState(0);
 
-  const [product, setProduct] = useState(null);
-  const [related, setRelated] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const { product, related, isLoading, isError } = useProductDetail(productSlug);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      setError(false);
-      try {
-        const [prodRes, relRes] = await Promise.all([
-          fetch(`${API_URL}/products/${productSlug}`),
-          fetch(`${API_URL}/products/related/${productSlug}`)
-        ]);
-
-        const prodData = await prodRes.json();
-        const relData = await relRes.json();
-
-        if (prodData.success) {
-          setProduct(prodData.data);
-        } else {
-          setError(true);
-        }
-
-        if (relData.success) {
-          setRelated(relData.data.slice(0, 4));
-        }
-      } catch (err) {
-        console.error('Failed to fetch product details', err);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [productSlug]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8f9fc]">
         <Loader2 size={48} className="animate-spin text-purple-600" />
@@ -75,7 +40,7 @@ export default function ProductDetail() {
     );
   }
 
-  if (error || !product) {
+  if (isError || !product) {
     return <Navigate to="/products" replace />;
   }
 
