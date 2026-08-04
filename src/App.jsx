@@ -1,6 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { AnimatePresence, motion } from 'framer-motion';
+import { queryClient } from './lib/queryClient';
 import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 import Loader from './components/common/Loader';
@@ -36,6 +40,20 @@ function ScrollToTop() {
   return null;
 }
 
+// Page-level fade transition wrapper
+function PageTransition({ children }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 export default function App() {
   const [loaded, setLoaded] = useState(false);
   const location = useLocation();
@@ -45,47 +63,58 @@ export default function App() {
   }, []);
 
   return (
-    <LanguageProvider>
-    <AuthProvider>
-      <HelmetProvider>
-        {!loaded && <Loader onComplete={handleLoaderComplete} />}
-        <div className="min-h-screen flex flex-col bg-[#001736] w-full overflow-x-hidden">
-          <ScrollToTop />
-          <Navbar />
-          <FloatingContact />
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/industries" element={<Industries />} />
-            <Route path="/mep-solutions" element={<MepSolutions />} />
-            <Route path="/mep" element={<MepSolutions />} />
-            <Route path="/mep-products" element={<MepSolutions />} />
-            <Route path="/mep-solutions/:categorySlug" element={<MepCategoryDetail />} />
-            <Route path="/mep/:categorySlug" element={<MepCategoryDetail />} />
-            <Route path="/mep-products/:categorySlug" element={<MepCategoryDetail />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/products/:categorySlug" element={<Products />} />
-          <Route path="/products/:categorySlug/:productSlug" element={<ProductDetail />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/quote" element={<Quote />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/admin" element={<Navigate to="/" replace />} />
-          <Route path="/dashboard" element={<Navigate to="/" replace />} />
-          <Route path="/admin-panel" element={<Navigate to="/" replace />} />
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-        {location.pathname !== '/industries' && location.pathname !== '/login' && location.pathname !== '/admin/dashboard' && <Footer />}
-      </div>
-    </HelmetProvider>
-    </AuthProvider>
-    </LanguageProvider>
+    <QueryClientProvider client={queryClient}>
+      <LanguageProvider>
+        <AuthProvider>
+          <HelmetProvider>
+            {!loaded && <Loader onComplete={handleLoaderComplete} />}
+            <div className="min-h-screen flex flex-col bg-[#001736] w-full overflow-x-hidden">
+              <ScrollToTop />
+              <Navbar />
+              <FloatingContact />
+
+              <AnimatePresence mode="wait" initial={false}>
+                <Routes location={location} key={location.pathname}>
+                  <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+                  <Route path="/about" element={<PageTransition><About /></PageTransition>} />
+                  <Route path="/industries" element={<PageTransition><Industries /></PageTransition>} />
+                  <Route path="/mep-solutions" element={<PageTransition><MepSolutions /></PageTransition>} />
+                  <Route path="/mep" element={<PageTransition><MepSolutions /></PageTransition>} />
+                  <Route path="/mep-products" element={<PageTransition><MepSolutions /></PageTransition>} />
+                  <Route path="/mep-solutions/:categorySlug" element={<PageTransition><MepCategoryDetail /></PageTransition>} />
+                  <Route path="/mep/:categorySlug" element={<PageTransition><MepCategoryDetail /></PageTransition>} />
+                  <Route path="/mep-products/:categorySlug" element={<PageTransition><MepCategoryDetail /></PageTransition>} />
+                  <Route path="/products" element={<PageTransition><Products /></PageTransition>} />
+                  <Route path="/products/:categorySlug" element={<PageTransition><Products /></PageTransition>} />
+                  <Route path="/products/:categorySlug/:productSlug" element={<PageTransition><ProductDetail /></PageTransition>} />
+                  <Route path="/contact" element={<PageTransition><Contact /></PageTransition>} />
+                  <Route path="/quote" element={<PageTransition><Quote /></PageTransition>} />
+                  <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+                  <Route path="/admin" element={<Navigate to="/" replace />} />
+                  <Route path="/dashboard" element={<Navigate to="/" replace />} />
+                  <Route path="/admin-panel" element={<Navigate to="/" replace />} />
+                  <Route
+                    path="/admin/dashboard"
+                    element={
+                      <ProtectedRoute>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+                </Routes>
+              </AnimatePresence>
+
+              {location.pathname !== '/industries' &&
+                location.pathname !== '/login' &&
+                location.pathname !== '/admin/dashboard' && <Footer />}
+            </div>
+
+            {/* TanStack Query DevTools — development only */}
+            <ReactQueryDevtools initialIsOpen={false} position="bottom" />
+          </HelmetProvider>
+        </AuthProvider>
+      </LanguageProvider>
+    </QueryClientProvider>
   );
 }

@@ -1,11 +1,13 @@
 import { Helmet } from 'react-helmet-async';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { LogOut, Settings, Package, Activity, Plus, Edit2, Trash2, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ProductFormModal from '../components/admin/ProductFormModal';
 import { useLanguage } from '../context/LanguageContext';
 import { dynamicTranslations } from '../data/dynamicTranslations';
+import { useAdminProducts } from '../hooks/useProducts';
+import { useDeleteProduct } from '../hooks/useMutations';
 
 const translateDynamic = (type, text, lang) => {
   if (!text) return text;
@@ -20,44 +22,27 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const { t, lang } = useLanguage();
 
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
 
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/products?limit=1000`);
-      if (res.status === 401 || res.status === 403) {
-        logout();
-        navigate('/', { replace: true });
-        return;
-      }
-      const data = await res.json();
-      if (data.success) {
-        setProducts(data.data);
-      } else {
-        setError('Failed to load products');
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // ── Redirect if not authenticated ────────────────────────────────────────
+  const isAuthed = !authLoading && !!token && !!admin;
+  const shouldRedirect = !authLoading && (!token || !admin);
 
-  useEffect(() => {
-    if (!authLoading) {
-      if (!token || !admin) {
-        navigate('/', { replace: true });
-      } else {
-        fetchProducts();
-      }
-    }
-  }, [token, admin, authLoading, navigate]);
+  // useEffect for redirect (hooks must be unconditional)
+  useState(() => {
+    if (shouldRedirect) navigate('/', { replace: true });
+  });
+
+  // ── Data fetching ─────────────────────────────────────────────────────────
+  const {
+    data: products = [],
+    isLoading: loading,
+    isError,
+    error: queryError,
+  } = useAdminProducts(isAuthed ? token : null);
+
+  const deleteProductMutation = useDeleteProduct(token);
 
   const handleLogout = () => {
     logout();
@@ -74,35 +59,16 @@ export default function Dashboard() {
     setIsModalOpen(true);
   };
 
-  const handleDeleteProduct = async (id) => {
+  const handleDeleteProduct = (id) => {
     if (!window.confirm(t('dashboard.confirmDelete'))) return;
-    
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/products/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      const data = await res.json();
-      if (res.ok) {
-        setProducts(prev => prev.filter(p => p._id !== id));
-      } else {
-        alert(`Failed to delete: ${data.message}`);
-      }
-    } catch (err) {
-      alert(`Error: ${err.message}`);
-    }
+    deleteProductMutation.mutate(id);
   };
 
-  const handleModalSuccess = (savedProduct) => {
-    if (editingProduct) {
-      setProducts(prev => prev.map(p => p._id === savedProduct._id ? savedProduct : p));
-    } else {
-      setProducts(prev => [savedProduct, ...prev]);
-    }
-  };
+  // Modal success: TanStack Query cache is already invalidated by useSaveProduct
+  // so no manual state update needed here.
+  const handleModalSuccess = () => {};
+
+  const error = isError ? queryError?.message ?? 'Failed to load products' : null;
 
   return (
     <>

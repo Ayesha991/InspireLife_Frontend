@@ -107,3 +107,45 @@
 .peel-card:hover .peel-l1 { transform: translate(-14px, 14px) rotate(-4deg); }
 .peel-card:hover .peel-l2 { transform: translate(-7px, 7px) rotate(-2deg); }
 .peel-card:hover .peel-l3 { transform: translate(6px, -10px) rotate(2deg); box-shadow: 0 24px 50px -18px rgba(0,0,0,0.4); }
+
+/* ============ 6. FLOATING BOB ============ */
+@keyframes float-bob {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+.float-bob {
+  animation: float-bob 3.5s ease-in-out infinite;
+}
+
+/* ============ 7. GRADIENT SHIFT ============ */
+@keyframes gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.gradient-shift {
+  background-size: 200% 200%;
+  animation: gradient-shift 6s ease infinite;
+}
+
+/* ============ 8. PULSE RING ============ */
+@keyframes pulse-ring {
+  0%   { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.45); }
+  70%  { transform: scale(1);    box-shadow: 0 0 0 14px rgba(168, 85, 247, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(168, 85, 247, 0); }
+}
+.pulse-ring {
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+/* ============ 9. SCROLL PROGRESS BAR ============ */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #9333ea, #c084fc);
+  z-index: 9999;
+  transform-origin: left;
+  transition: transform 0.1s linear;
+}

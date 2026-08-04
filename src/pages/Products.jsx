@@ -1,120 +1,94 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link, useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ArrowRight, ChevronRight, ShoppingCart, ChevronLeft, Loader2, PackageX } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, ChevronRight, ShoppingCart, Loader2, PackageX } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useCategories, useInfiniteProducts } from '../hooks/useProducts';
 import GlowCard from '../components/common/GlowCard';
 import CloudinaryImage from '../components/common/CloudinaryImage';
 
 const getTranslation = (item, fieldEn, fieldAr, lang) => {
-  if (lang === 'ar' && item && item[fieldAr]) {
-    return item[fieldAr];
-  }
+  if (lang === 'ar' && item && item[fieldAr]) return item[fieldAr];
   return (item && item[fieldEn]) || '';
 };
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 const PLACEHOLDER_IMG = 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&q=80';
 
 export default function Products() {
   const { categorySlug } = useParams();
   const navigate = useNavigate();
   const { t, lang } = useLanguage();
-
-  const [categories, setCategories] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [pagination, setPagination] = useState(null);
-  
   const [searchParams] = useSearchParams();
+
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [activeCategory, setActiveCategory] = useState(categorySlug || '');
-  const [page, setPage] = useState(1);
-  
+
+  // Sync search param changes
   useEffect(() => {
     const query = searchParams.get('search') || '';
-    if (query !== search) {
-      setSearch(query);
-      setPage(1);
-    }
+    setSearch(query);
   }, [searchParams]);
-  
-  const [loading, setLoading] = useState(true);
 
+  // Sync category slug from URL
   useEffect(() => {
-    fetch(`${API_URL}/categories`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          const list = [...data.data];
-          const pipesIndex = list.findIndex(c => c.slug === 'pipes-and-pipe-fittings' || c.name.toLowerCase().includes('pipes'));
-          if (pipesIndex > -1) {
-            const [pipesCat] = list.splice(pipesIndex, 1);
-            list.unshift(pipesCat);
-          }
-          setCategories([{ name: t('productsPage.allCategories'), slug: '' }, ...list]);
-        }
-      })
-      .catch(err => console.error('Error fetching categories:', err));
-  }, [t]); // Re-fetch or re-format if translation for 'All Categories' changes
-
-  useEffect(() => {
-    if (categorySlug !== activeCategory) {
-      setActiveCategory(categorySlug || '');
-      setPage(1);
-    }
+    setActiveCategory(categorySlug || '');
   }, [categorySlug]);
 
+  // ── Categories ──────────────────────────────────────────────────────────────
+  const { data: rawCategories = [], isLoading: catsLoading } = useCategories();
+
+  const categories = (() => {
+    if (!rawCategories.length) return [];
+    const list = [...rawCategories];
+    const pipesIndex = list.findIndex(
+      (c) => c.slug === 'pipes-and-pipe-fittings' || c.name?.toLowerCase().includes('pipes')
+    );
+    if (pipesIndex > -1) {
+      const [pipesCat] = list.splice(pipesIndex, 1);
+      list.unshift(pipesCat);
+    }
+    return [{ name: t('productsPage.allCategories'), slug: '' }, ...list];
+  })();
+
+  // ── Infinite Products ───────────────────────────────────────────────────────
+  const {
+    products = [],
+    pagination = null,
+    fetchNextPage,
+    hasNextPage = false,
+    isFetchingNextPage,
+    isLoading,
+  } = useInfiniteProducts({ category: activeCategory, search });
+
+  // ── Infinite scroll sentinel ────────────────────────────────────────────────
+  const sentinelRef = useRef(null);
+
   useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      try {
-        let url = `${API_URL}/products?page=${page}&limit=12`;
-        if (activeCategory) url += `&category=${activeCategory}`;
-        if (search) {
-          url += `&search=${encodeURIComponent(search)}`;
-        }
-
-        const res = await fetch(url);
-        const data = await res.json();
-        
-        if (data.success) {
-          setProducts(data.data);
-          setPagination(data.pagination);
-        }
-      } catch (err) {
-        console.error('Error fetching products:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const timer = setTimeout(() => {
-      fetchProducts();
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, [activeCategory, page, search]);
+    if (!hasNextPage || isFetchingNextPage) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) fetchNextPage();
+      },
+      { threshold: 0.1 }
+    );
+    const el = sentinelRef.current;
+    if (el) observer.observe(el);
+    return () => { if (el) observer.unobserve(el); };
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleCategoryClick = (slug) => {
-    if (slug) {
-      navigate(`/products/${slug}`);
-    } else {
-      navigate(`/products`);
-    }
+    if (slug) navigate(`/products/${slug}`);
+    else navigate('/products');
   };
 
-  const currentCat = categories.find(c => c.slug === activeCategory) || categories[0];
+  const currentCat = categories.find((c) => c.slug === activeCategory) || categories[0];
 
   return (
     <>
       <Helmet>
         <title>{t('productsPage.pageTitle')} | IPTS Global</title>
-        <meta name="description" content="Browse IPTS Global's extensive catalog of industrial tools, machinery, chemicals, and mechanical solutions." />
-        <meta
-          name="description"
-          content={t('productsPage.pageDesc')}
-        />
+        <meta name="description" content={t('productsPage.pageDesc')} />
       </Helmet>
 
       <main id="main-content" className="bg-[#f8f9fc] min-h-screen pb-20">
@@ -127,8 +101,11 @@ export default function Products() {
                 <li className="text-purple-600">{t('productsPage.breadcrumbProducts')}</li>
               </ol>
             </nav>
-            <h1 className="text-3xl md:text-5xl font-bold text-[#071C33] font-heading mb-2 tracking-tight">{t('productsPage.pageTitle')}</h1>
-            {/* Horizontal Scrollable Categories for Mobile */}
+            <h1 className="text-3xl md:text-5xl font-bold text-[#071C33] font-heading mb-2 tracking-tight">
+              {t('productsPage.pageTitle')}
+            </h1>
+
+            {/* Horizontal Scrollable Categories — Mobile */}
             <div className="lg:hidden mt-6 pt-4 border-t border-[#EEF2F6]">
               <p className="text-[11px] font-bold tracking-widest uppercase text-black mb-2">
                 {t('productsPage.allCategories')}
@@ -163,39 +140,39 @@ export default function Products() {
 
         <div className="max-w-7xl mx-auto px-6 py-4 md:py-6">
           <div className="flex flex-col lg:flex-row gap-10">
-            {/* Sidebar */}
-            <aside
-              className="hidden lg:flex flex-col w-64 flex-shrink-0"
-              aria-label="Product categories"
-            >
+            {/* Desktop Sidebar */}
+            <aside className="hidden lg:flex flex-col w-64 flex-shrink-0" aria-label="Product categories">
               <p className="text-xs font-bold tracking-widest uppercase text-black mb-4">
                 {t('productsPage.allCategories')}
               </p>
               <div className="flex flex-col gap-1 mb-8 max-h-[60vh] overflow-y-auto ltr:pr-2 rtl:pl-2 custom-scrollbar">
-                {categories.map(cat => {
+                {categories.map((cat) => {
                   const isActive = activeCategory === cat.slug;
                   return (
                     <button
                       key={cat.slug || 'all'}
                       onClick={() => handleCategoryClick(cat.slug)}
-                      className={`flex items-center justify-between px-4 py-3 rounded-full text-sm font-semibold text-start transition-all ${isActive
+                      className={`flex items-center justify-between px-4 py-3 rounded-full text-sm font-semibold text-start transition-all ${
+                        isActive
                           ? 'bg-purple-600 text-white shadow-md'
                           : 'text-[#071C33] hover:bg-white hover:shadow-sm'
-                        }`}
+                      }`}
                     >
-                      <span className="truncate ltr:pr-2 rtl:pl-2">{cat.slug ? getTranslation(cat, 'name', 'nameAr', lang) : cat.name}</span>
-                      {isActive ? <ChevronRight size={16} className="shrink-0 rtl:rotate-180" /> : <span className="text-xs opacity-50 shrink-0">{cat.productCount > 0 ? cat.productCount : ''}</span>}
+                      <span className="truncate ltr:pr-2 rtl:pl-2">
+                        {cat.slug ? getTranslation(cat, 'name', 'nameAr', lang) : cat.name}
+                      </span>
+                      {isActive
+                        ? <ChevronRight size={16} className="shrink-0 rtl:rotate-180" />
+                        : <span className="text-xs opacity-50 shrink-0">{cat.productCount > 0 ? cat.productCount : ''}</span>
+                      }
                     </button>
-                  )
+                  );
                 })}
               </div>
 
-              {/* Technical Support Box */}
               <div className="bg-purple-50 rounded-xl p-6 border border-[#e2e8f0]">
                 <h3 className="font-bold text-[#071C33] text-base mb-2 font-heading">{t('productsPage.techSupportTitle')}</h3>
-                <p className="text-[#071C33]/70 text-sm mb-4 leading-relaxed">
-                  {t('productsPage.techSupportDesc')}
-                </p>
+                <p className="text-[#071C33]/70 text-sm mb-4 leading-relaxed">{t('productsPage.techSupportDesc')}</p>
                 <Link to="/contact" className="text-purple-600 text-sm font-bold flex items-center gap-1 hover:gap-2 transition-all">
                   {t('productsPage.contactEng')} <ArrowRight size={14} className="rtl:rotate-180" />
                 </Link>
@@ -204,28 +181,44 @@ export default function Products() {
 
             {/* Grid Area */}
             <div className="flex-1 min-w-0">
-
               <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <p className="text-sm text-black">
                   {pagination ? (
-                    <>{t('productsPage.showing')} <span className="font-bold">{products.length}</span> {t('productsPage.of')} <span className="font-bold">{pagination.totalProducts}</span> {t('productsPage.in')} <span className="font-bold">{currentCat?.slug ? getTranslation(currentCat, 'name', 'nameAr', lang) : currentCat?.name || t('productsPage.allCategories')}</span></>
+                    <>
+                      {t('productsPage.showing')} <span className="font-bold">{products.length}</span>{' '}
+                      {t('productsPage.of')} <span className="font-bold">{pagination.totalProducts}</span>{' '}
+                      {t('productsPage.in')}{' '}
+                      <span className="font-bold">
+                        {currentCat?.slug
+                          ? getTranslation(currentCat, 'name', 'nameAr', lang)
+                          : currentCat?.name || t('productsPage.allCategories')}
+                      </span>
+                    </>
                   ) : (
-                    'Loading...'
+                    isLoading ? '...' : ''
                   )}
                 </p>
               </div>
 
-              {/* Product cards */}
-              {loading ? (
-                <div className="flex justify-center items-center py-20">
-                  <Loader2 size={32} className="animate-spin text-purple-600" />
-                </div>
-              ) : products.length > 0 ? (
+              {/* Product Cards */}
+              {isLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {products.map((prod, i) => (
-                    <ProductCard key={prod._id} product={prod} index={i} t={t} lang={lang} />
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="skeleton rounded-xl h-80" />
                   ))}
                 </div>
+              ) : products.length > 0 ? (
+                <motion.div
+                
+                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
+                  layout
+                >
+                  <AnimatePresence mode="popLayout">
+                    {products.map((prod, i) => (
+                      <ProductCard key={prod._id} product={prod} index={i} t={t} lang={lang} />
+                    ))}
+                  </AnimatePresence>
+                </motion.div>
               ) : (
                 <div className="flex flex-col items-center justify-center py-20 text-[#AAB5C2]">
                   <PackageX size={48} className="mb-4 opacity-50" />
@@ -233,31 +226,22 @@ export default function Products() {
                 </div>
               )}
 
-              {/* Pagination */}
-              {pagination && pagination.totalPages > 1 && (
-                <div className="mt-12 flex justify-center items-center gap-2">
-                  <button 
-                    onClick={() => { setPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                    disabled={!pagination.hasPrevPage}
-                    className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#EEF2F6] bg-white text-[#071C33] hover:border-purple-600 hover:text-purple-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft size={16} className="rtl:rotate-180" />
-                  </button>
-                  
-                  <span className="text-sm font-semibold text-[#071C33] px-4">
-                    Page {pagination.currentPage} of {pagination.totalPages}
-                  </span>
+              {/* Infinite Scroll Sentinel */}
+              <div ref={sentinelRef} className="h-10 mt-4" />
 
-                  <button 
-                    onClick={() => { setPage(p => Math.min(pagination.totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                    disabled={!pagination.hasNextPage}
-                    className="w-10 h-10 flex items-center justify-center rounded-lg border border-[#EEF2F6] bg-white text-[#071C33] hover:border-purple-600 hover:text-purple-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronRight size={16} className="rtl:rotate-180" />
-                  </button>
+              {/* Loading more indicator */}
+              {isFetchingNextPage && (
+                <div className="flex justify-center items-center py-8">
+                  <Loader2 size={28} className="animate-spin text-purple-600" />
                 </div>
               )}
 
+              {/* End of results */}
+              {!isLoading && !hasNextPage && products.length > 0 && (
+                <p className="text-center text-sm text-[#AAB5C2] py-8">
+                  {t('productsPage.allLoaded') || 'All products loaded'}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -265,48 +249,43 @@ export default function Products() {
         {/* Bottom CTA Banner */}
         <div className="max-w-7xl mx-auto px-6 mt-16">
           <div className="relative rounded-2xl overflow-hidden bg-[#071C33] p-10 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8 shadow-2xl">
-            {/* Background image overlay */}
             <div
               className="absolute inset-0 opacity-20 mix-blend-overlay pointer-events-none"
               style={{
                 backgroundImage: 'url("https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1200&q=80")',
                 backgroundSize: 'cover',
-                backgroundPosition: 'center'
+                backgroundPosition: 'center',
               }}
             />
-
             <div className="relative z-10">
-              <h2 className="text-3xl md:text-4xl font-bold text-white font-heading mb-3">
-                {t('productsPage.ctaTitle')}
-              </h2>
-              <p className="text-[#d5e3fc] text-base md:text-lg max-w-xl">
-                {t('productsPage.ctaDesc')}
-              </p>
+              <h2 className="text-3xl md:text-4xl font-bold text-white font-heading mb-3">{t('productsPage.ctaTitle')}</h2>
+              <p className="text-[#d5e3fc] text-base md:text-lg max-w-xl">{t('productsPage.ctaDesc')}</p>
             </div>
-
             <div className="relative z-10 flex-shrink-0">
-              <Link to="/quote" className="inline-flex items-center justify-center px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-lg transition-all hover:scale-105 gap-2">
+              <Link
+                to="/quote"
+                className="inline-flex items-center justify-center px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-lg transition-all hover:scale-105 gap-2"
+              >
                 {t('nav.requestQuote')} <ArrowRight size={18} className="rtl:rotate-180" />
               </Link>
             </div>
           </div>
         </div>
-
       </main>
     </>
   );
 }
 
-function ProductCard({ product, t, lang }) {
+function ProductCard({ product, t, lang, index }) {
   const imgUrl = product.image || PLACEHOLDER_IMG;
 
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.3 }}
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.35, delay: (index % 12) * 0.05, ease: [0.22, 1, 0.36, 1] }}
       className="h-full"
     >
       <GlowCard className="h-full">
@@ -324,11 +303,13 @@ function ProductCard({ product, t, lang }) {
           </div>
 
           <div className="p-6 flex flex-col flex-1 relative bg-white">
-            <p className="text-purple-600 text-xs font-bold uppercase tracking-wider mb-2 truncate">{getTranslation(product, 'category', 'categoryAr', lang)}</p>
+            <p className="text-purple-600 text-xs font-bold uppercase tracking-wider mb-2 truncate">
+              {getTranslation(product, 'category', 'categoryAr', lang)}
+            </p>
             <h3 className="font-bold text-[#071C33] text-lg leading-tight font-heading mb-2 group-hover:text-purple-700 transition-colors line-clamp-2 text-start">
               {getTranslation(product, 'productName', 'productNameAr', lang)}
             </h3>
-            
+
             {getTranslation(product, 'specifications', 'specificationsAr', lang) && (
               <p className="text-sm text-[#071C33]/70 line-clamp-3 mb-4 text-start">
                 {getTranslation(product, 'specifications', 'specificationsAr', lang)}
@@ -339,7 +320,7 @@ function ProductCard({ product, t, lang }) {
               <button
                 className="flex items-center gap-2 rounded-full border border-[#EEF2F6] text-[#071C33] hover:border-purple-600 hover:bg-purple-600 hover:text-white transition-all group/cart px-4 py-2"
                 onClick={(e) => {
-                  e.preventDefault(); 
+                  e.preventDefault();
                   window.location.href = `/quote?product=${encodeURIComponent(product.productName)}`;
                 }}
                 aria-label={t('nav.requestQuote')}

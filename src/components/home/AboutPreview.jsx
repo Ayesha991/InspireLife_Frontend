@@ -9,7 +9,7 @@ const desktopAboutPreview = cloudinaryAssets.desktop['home_section.webp'];
 const mobileAboutPreview = cloudinaryAssets.mobile['Home_section.webp'];
 
 export default function AboutPreview() {
-  const { ref, inView } = useInView({ triggerOnce: false, threshold: 0.15 });
+  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.12 });
   const { t, lang } = useLanguage();
   const isRTL = lang === 'ar';
 
@@ -21,12 +21,12 @@ export default function AboutPreview() {
       className="bg-[#001736] overflow-hidden w-full text-white relative"
       aria-labelledby="about-preview-heading"
     >
-      {/* Desktop & Tablet Image Background */}
+      {/* Desktop Image — slides from right */}
       <div className="hidden md:block absolute top-0 end-0 w-1/2 h-full z-0 overflow-hidden bg-[#001736]">
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={inView ? { opacity: 1 } : { opacity: 0 }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+          initial={{ opacity: 0, x: isRTL ? -60 : 60 }}
+          animate={inView ? { opacity: 1, x: 0 } : {}}
+          transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
           className="w-full h-full relative overflow-hidden bg-[#001736]"
         >
           <picture className="absolute inset-0 w-full h-full block">
@@ -50,40 +50,71 @@ export default function AboutPreview() {
       </div>
 
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row relative z-10">
-        {/* Left Content Column (Strictly constrained to 50% on Tablet/Desktop) */}
+        {/* Content column — slides from left */}
         <motion.div
-          initial={{ opacity: 1, x: 0 }}
-          animate={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, x: isRTL ? 50 : -50 }}
+          animate={inView ? { opacity: 1, x: 0 } : {}}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="w-full md:w-1/2 px-6 py-10 md:py-16 md:pe-8 lg:pe-16 flex flex-col justify-center"
         >
-          <p className="text-xs sm:text-sm font-semibold text-[#aac7ff] uppercase tracking-widest mb-3">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            className="text-xs sm:text-sm font-semibold text-[#aac7ff] uppercase tracking-widest mb-3"
+          >
             {t('about.label')}
-          </p>
-          <h2 id="about-preview-heading" className="text-2xl sm:text-3xl md:text-3xl lg:text-5xl font-bold text-white mb-4 md:mb-5 font-heading leading-tight">
+          </motion.p>
+
+          <motion.h2
+            id="about-preview-heading"
+            initial={{ opacity: 0, y: 24 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
+            className="text-2xl sm:text-3xl md:text-3xl lg:text-5xl font-bold text-white mb-4 md:mb-5 font-heading leading-tight"
+          >
             {t('about.heading1')} <br className="hidden sm:block" />
             <span className="text-[#aac7ff]">{t('about.heading2')}</span>
-          </h2>
-          <p className="text-sm md:text-sm lg:text-lg text-[#d5e3fc]/90 mb-6 leading-relaxed max-w-full">
-            {t('about.paragraph')}
-          </p>
+          </motion.h2>
 
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            className="text-sm md:text-sm lg:text-lg text-[#d5e3fc]/90 mb-6 leading-relaxed max-w-full"
+          >
+            {t('about.paragraph')}
+          </motion.p>
+
+          {/* Commitment list — staggered */}
           <ul className="space-y-3 mb-8 text-[#d5e3fc]">
-            {Array.isArray(commitments) && commitments.map((item) => (
-              <li key={item} className="flex items-center gap-3">
+            {Array.isArray(commitments) && commitments.map((item, i) => (
+              <motion.li
+                key={item}
+                initial={{ opacity: 0, x: isRTL ? 20 : -20 }}
+                animate={inView ? { opacity: 1, x: 0 } : {}}
+                transition={{ duration: 0.5, delay: 0.35 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                className="flex items-center gap-3"
+              >
                 <CheckCircle size={18} className="text-purple-300 shrink-0" />
                 <span className="text-sm lg:text-base font-medium text-white">{item}</span>
-              </li>
+              </motion.li>
             ))}
           </ul>
 
-          <Link
-            to="/about"
-            className="w-fit px-5 py-2.5 lg:px-6 lg:py-3 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded shadow-md transition-all hover:scale-[1.02]"
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            {t('about.knowMore')}
-          </Link>
+            <Link
+              to="/about"
+              className="w-fit px-5 py-2.5 lg:px-6 lg:py-3 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold rounded shadow-md transition-all hover:scale-[1.02]"
+            >
+              {t('about.knowMore')}
+            </Link>
+          </motion.div>
         </motion.div>
-
       </div>
     </section>
   );

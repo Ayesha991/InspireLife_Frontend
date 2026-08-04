@@ -5,44 +5,31 @@ import { Lock, Mail, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import GlowCard from '../components/common/GlowCard';
 import { useLanguage } from '../context/LanguageContext';
+import { useLogin } from '../hooks/useMutations';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const loginMutation = useLogin();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
-    setIsLoading(true);
-
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+    loginMutation.mutate(
+      { email, password },
+      {
+        onSuccess: (data) => {
+          login(data.data.admin, data.data.token);
+          navigate('/admin/dashboard');
         },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
       }
-
-      login(data.data.admin, data.data.token);
-      navigate('/admin/dashboard');
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setIsLoading(false);
-    }
+    );
   };
+
+  const isLoading = loginMutation.isPending;
+  const error = loginMutation.error?.message ?? null;
 
   return (
     <>
